@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Tutorial Phaser Luxiouz</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+
+<div id="gameContainer"></div>
+
+<script type="text/javascript">
+
+
+
+	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer',{ preload: preload, create: create, update: update });
+
+		function preload(){
+			game.load.image('cielo','assets/sky.png');
+			game.load.image('suelo','assets/platform.png');
+			game.load.image('estrella','assets/star.png');
+			//Para spritesheets, se pone lo mismo que para las imagenes, pero ademas el ancho y alto de cada sprite, se ve que internamnete "trocea" la imagen en sprites del tamaño que le digas
+			game.load.spritesheet('colega','assets/dude.png',32,48); 
+		}
+
+		function create(){
+			//Le ponemos posicion 0,0 (x, y) porque queremos que empiece en la coordenada superior izquierda, ya que es el fondo del juego
+			game.add.sprite(0,0,'cielo');
+
+			platforms = game.add.group();
+			//Aqui ponemos game.world-32 porque la imagen tiene una altura de 32px
+			var suelo = platforms.create(0, game.world.height-64, 'suelo');
+			//El primer parametro dice cuantas veces se repite la imagen en horizontal, y el segundo cuantas veces lo hace en vertical.
+			suelo.scale.setTo(2,2);
+			suelo.body.immovable = true;
+
+			var plataforma = platforms.create(400,400,'suelo');
+			plataforma.body.immovable = true;
+
+			plataforma = platforms.create(0, 250, 'suelo');
+			plataforma.body.immovable = true;
+			
+			player = game.add.sprite(32, game.world.height-150, 'colega');
+
+			player.body.bounce.y = 0.2;
+			player.body.gravity.y = 9.8;
+			player.body.collideWorldBounds = true;
+			//Parametros: nombre_animacion, "cachitos" del spritesheet que le corresponden, velocidad a la que cambia el sprite, si queremos que al acabar la secuencia vuelva a empezar
+			//player.animations.add('left', [0,1,2,3], 50, true);
+			player.animations.add('mover_izquierda', [0,1,2,3,4,5,6,7,8], 20, true);
+			player.animations.add('mover_derecha', [5,6,7,8], 10, true);
+
+
+			cursores = game.input.keyboard.createCursorKeys();
+		}
+
+		function update(){
+			game.physics.collide(player, platforms);
+
+			player.body.velocity.x = 0;
+
+			if(cursores.left.isDown){
+				//velocidad de movimiento y nombre de la animacion
+				player.body.velocity.x = -150;
+				player.animations.play('mover_izquierda');
+			}
+			else if(cursores.right.isDown){
+				player.body.velocity.x = 150;
+				player.animations.play('mover_derecha');	
+			}
+			else{
+				player.animations.stop();
+				//Ponemos el sprite de cuando esta parado en las animaciones
+				player.frame = 4;
+			}
+
+			if(cursores.up.isDown && player.body.touching.down){
+				//Se ve que internamente hace una animacion, porque lo que haces es disminuir la coordenada y para que el sprite este mas arriba 
+				player.body.velocity.y = -850;
+			}
+		}
+
+
+</script>
+
+</body>
+</html>
