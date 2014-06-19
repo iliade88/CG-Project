@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
 
-
+	//Ancho, alto, Dejar AUTO siempre, id del elemento DOM donde se insertará el juego, objeto de estados. Este último esta puesto en modo chapuza, mas adelante quitaremos los estados de aqui para hacerlo mas modular
 	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer',{ preload: preload, create: create, update: update });
 
 		function preload(){
@@ -23,8 +23,16 @@
 			game.load.spritesheet('colega','assets/dude.png',32,48); 
 		}
 
+		var player;
+		var platforms;
+		var cursores;
+		var score = 0;
+		var scoreText;
+		var estrellas;
+
 		function create(){
 			//Le ponemos posicion 0,0 (x, y) porque queremos que empiece en la coordenada superior izquierda, ya que es el fondo del juego
+			//Es importante crear el fondo el primero, ya que el orden importa, los objetos se pintan en el orden en el cual se añaden, por lo que si ponemos el fondo al final, solo veremos el fondo.
 			game.add.sprite(0,0,'cielo');
 
 			platforms = game.add.group();
@@ -32,14 +40,26 @@
 			var suelo = platforms.create(0, game.world.height-64, 'suelo');
 			//El primer parametro dice cuantas veces se repite la imagen en horizontal, y el segundo cuantas veces lo hace en vertical.
 			suelo.scale.setTo(2,2);
+			//Si ponemos immovable a false, cuando el jugador colisione con alguna plataforma, esta se movera en esa direccion hasta desaparecer, por ejemplo, si saltamos encima, caera hasta desaparecer del mundo.
 			suelo.body.immovable = true;
 
 			var plataforma = platforms.create(400,400,'suelo');
 			plataforma.body.immovable = true;
 
-			plataforma = platforms.create(0, 250, 'suelo');
+			plataforma = platforms.create(-150, 250, 'suelo');
 			plataforma.body.immovable = true;
 			
+			estrellas = game.add.group();
+
+			for(var i = 0; i < 12; i++){
+				estrella = estrellas.create(i*70, 0, 'estrella');
+				estrella.body.bounce.y = 0.7 + Math.random() * 0.2;
+				estrella.body.gravity.y = 6;
+			}
+
+			
+			scoreText = game.add.text(16,16, 'Puntuacion: 0', {fontSize: '32px', fill: '#000'});
+
 			player = game.add.sprite(32, game.world.height-150, 'colega');
 
 			player.body.bounce.y = 0.2;
@@ -56,6 +76,10 @@
 
 		function update(){
 			game.physics.collide(player, platforms);
+
+			game.physics.collide(estrellas, platforms);
+			//Esto comprueba si se superponen los primeros dos objetos que se le pasan, y en caso afirmativo, se ejecuta la funcion que se le pone como tercer parametro. Los otros dos parametros ni idea, pero entiendo que el ultimo sera el mundo.
+			game.physics.overlap(player, estrellas, cogerEstrella, null, this);
 
 			player.body.velocity.x = 0;
 
@@ -77,6 +101,19 @@
 			if(cursores.up.isDown && player.body.touching.down){
 				//Se ve que internamente hace una animacion, porque lo que haces es disminuir la coordenada y para que el sprite este mas arriba 
 				player.body.velocity.y = -850;
+			}
+		}
+
+		//Si el jugador toca una estrella, la borramos del juego y le añadimos la puntuacion
+		function cogerEstrella(jugador, estrella){
+			estrella.kill();
+
+			score+=10;
+			scoreText.content = 'Puntuacion: ' + score;
+			//Si ha recogido todas las estrellas.
+			//Con total sobre un grupo, sabemos todos los objetos del grupo que no hemos 'matado' todavia, y con length sabemos los que tiene (sin parentesis)
+			if(estrellas.total==0){
+				scoreText.content = 'QUEST COMPLETE!';
 			}
 		}
 
