@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Tutorial Youtube Luxiouz</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+
+<div id="gameContainer"></div>
+
+<script type="text/javascript">
+
+	//Phaser.AUTO para que reconozca el mismo Phaser si se trata de OpenGL o Canvas.
+	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer',{ preload: preload, create: create, update: update });
+
+		function preload(){
+
+			//game.load.image(nombre, ruta);
+			game.load.image('sky', 'assets/sky.png');
+			game.load.image('ground', 'assets/platform.png');
+			game.load.image('star', 'assets/star.png');
+			game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+		}
+		
+		var player;
+
+		function create(){
+			//game.add.sprite(pixel inicio, pixelinicio, nombre de la imagen);//Añade el sprite al juego).
+			game.add.sprite(0, 0, 'sky');
+
+			//Como queremos añadir varias plataformas, primero creamos un grupo donde las meteremos.
+			plataformas = game.add.group();
+
+
+			//se añade a game.world.height - 32, porque 32 es la altura del sprite. SI lo añadiesemos sin el -32, se añadiria la plataforma justo DEBAJO de lo que se muestra en el canvas.
+			var ground = plataformas.create(0 , game.world.height  - 32, 'ground');
+			//Todas las plataformas se añaden al grupo para asi calcular muy facilmente las colisiones.
+			ground.body.inmovable = true;
+
+
+
+			player = game.add.sprite(32, game.world.height - 150, 'dude');
+			player.body.bounce.y = 0.2 //rebote
+			player.body.gravity.y = 6; //Gravedad.
+			player.body.collideWorldBounds = true; //Activamos las colisiones con el mundo
+
+			player.animations.add('left', [0,1,2,3],10,true);
+			player.animations.add('right', [5,6,7,8],10,true);
+
+
+		}
+
+		function update(){
+			game.physics.collide(player, plataformas);	
+			player.body.velocity.x = 0;	
+		}
+
+
+</script>
+
+</body>
+</html>
